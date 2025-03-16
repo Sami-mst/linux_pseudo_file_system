@@ -38,4 +38,7 @@ typedef struct superblock {
 } *superblock;
 
 superblock init_superblock();
+int read_block(superblock sb,int fd, uint32_t block_number, void *buffer);
+void print_block_hex(void *buffer);
+void get_super_block(int fd,void *buffer);
 #endif // FILESYSTEM_H

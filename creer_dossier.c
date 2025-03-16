@@ -7,28 +7,42 @@
 #include <string.h>
 #include "inode.h"
 #include "block.h"
-#include "creer_dossier.h"
-void creer_filesystem(){
-    superblock sb=init_superblock();
-    memset(inode_bitmap,0,INODE_BITMAP_SIZE_IN_BYTES);
-    memset(block_bitmap,0,BLOCK_BITMAP_SIZE_IN_BYTES);
-     // Open filesystem file
+
+int read_block(superblock sb,FILE *disk, uint32_t block_number, uint8_t *buffer) {
+
+    if (block_number >= sb->total_blocks) return -1;
     
-    int fd = open(PARTITION_FILE, O_CREAT | O_WRONLY | O_TRUNC, 0644);
-    if (fd == -1) {
-        perror("Failed to open partition file");
-        exit(1);
+    fseek(disk, block_number * BLOCK_SIZE, SEEK_SET);
+    fread(buffer, 1, BLOCK_SIZE, disk);
+    
+    return 0;
+}
+void write_to_partition(int fd, int block, void *data, size_t data_size) {
+
+
+    // Step 3: Write the modified buffer back to the partition, preserving the null bytes
+    ssize_t bytesWritten = pwrite(fd, data, BLOCK_SIZE, block);
+    if (bytesWritten == -1) {
+        perror("Failed to write to partition");
+        close(fd);
+    } else {
+        printf("Successfully wrote %zd bytes to partition\n", bytesWritten);
     }
+}
 
-    // ecrire le super block
-    write_to_partition(fd,0,sb,sizeof(sb));
 
-    write_to_partition(fd,1,inode_bitmap,sizeof(inode_bitmap));
+void print_block_hex(const uint8_t *buffer) {
+    for (int i = 0; i < BLOCK_SIZE; i++) {
+        printf("%02X ", buffer[i]);
+        if ((i + 1) % 16 == 0) printf("\n"); // New line every 16 bytes
+    }
+    printf("\n");
+}
 
-    write_to_partition(fd,2,block_bitmap,sizeof(block_bitmap));
-
+int creer_inode(char *nom,int type){
+    int fd = open(PARTITION_FILE, O_CREAT | O_WRONLY | O_TRUNC, 0644);
     inode root_inode = init_inode();  // creer le inode pour root 
-    root_inode->file_type=FILE_TYPE_DIRECTORY;
+    root_inode->file_type=type;
     root_inode->mode=777;
     root_inode->uid=0;
     root_inode->gid=0;
@@ -63,6 +77,4 @@ void creer_filesystem(){
     }
 
     close(fd);
-    printf("Filesystem formatted successfully.\n");
 }
-
