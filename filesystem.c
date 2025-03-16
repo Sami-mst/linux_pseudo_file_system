@@ -28,13 +28,18 @@ superblock init_superblock() {
     return sb;
 }
 
-int read_block(superblock sb, int fd, uint32_t block_number, void *buffer) {
-    if (block_number >= sb->total_blocks) return -1;
-    
-    lseek(fd, block_number * BLOCK_SIZE, SEEK_SET);
-    read(fd,buffer, BLOCK_SIZE );
-    
-    return 0;
+
+ssize_t read_block(int fd, size_t block_number, void *buffer) {
+    // Calculate the offset for the given block number
+    off_t offset = block_number * BLOCK_SIZE;
+
+    // Use pread() to read the block at the calculated offset
+    ssize_t bytesRead = pread(fd, buffer, BLOCK_SIZE, offset);
+    if (bytesRead == -1) {
+        perror("Failed to read block");
+    }
+
+    return bytesRead;  // Return the number of bytes read (should be BLOCK_SIZE)
 }
 
 void print_block_hex(void *sb) {
@@ -47,14 +52,6 @@ void print_block_hex(void *sb) {
 }
 
 void get_super_block(int fd,void *buffer){
-   if (lseek(fd, 0, SEEK_SET) == (off_t)-1) {
-        perror("lseek failed");
-        return;
-    }
-    int s=read(fd,buffer, BLOCK_SIZE);
-    printf("%d\n",s);
-    if(s!=BLOCK_SIZE){
-        perror("read failed");
-    }
+   read_block(fd, 0, buffer);
 }
 

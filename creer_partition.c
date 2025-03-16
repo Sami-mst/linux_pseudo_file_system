@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h> 
 #include <string.h>
@@ -19,13 +20,13 @@ void creer_filesystem(){
         perror("Failed to open partition file");
         exit(1);
     }
-
+    
     // ecrire le super block
-    write_to_partition(fd,0,sb,sizeof(sb));
+    write_to_partition(fd,0,sb,sizeof(struct superblock));
 
-    write_to_partition(fd,1,inode_bitmap,sizeof(inode_bitmap));
+    write_to_partition(fd,INODE_BITMAP_BLOCK,inode_bitmap,INODE_BITMAP_SIZE_IN_BYTES);
 
-    write_to_partition(fd,2,block_bitmap,sizeof(block_bitmap));
+    write_to_partition(fd,BLOCK_BITMAP_BLOCK,block_bitmap,BLOCK_BITMAP_SIZE_IN_BYTES);
 
     inode root_inode = init_inode();  // creer le inode pour root 
     root_inode->file_type=FILE_TYPE_DIRECTORY;
@@ -36,31 +37,13 @@ void creer_filesystem(){
     root_inode->single_indirect=0;
     memset(root_inode->block_pointers,0,sizeof(root_inode->block_pointers));
 
-    if (lseek(fd, INODE_TABLE_START * BLOCK_SIZE, SEEK_SET) == -1) {
-        perror("Failed to seek to inode table");
-        close(fd);
-        exit(1);
-    }
-    if (write(fd, root_inode, INODE_SIZE) != INODE_SIZE) {
-        perror("Failed to write root inode");
-        close(fd);
-        exit(1);
-    }
+    write_to_partition(fd,INODE_TABLE_START,root_inode,INODE_SIZE);
 
     // marquer le premier inode comme utilisé
-    inode_bitmap[0] = 0x01;  // 
+    inode_bitmap[0] = 0x01;  
 
-    // Update the inode bitmap with the root inode marked
-    if (lseek(fd, INODE_BITMAP_BLOCK * BLOCK_SIZE, SEEK_SET) == -1) {
-        perror("Failed to seek to inode bitmap");
-        close(fd);
-        exit(1);
-    }
-    if (write(fd, inode_bitmap, INODE_BITMAP_SIZE_IN_BYTES) != INODE_BITMAP_SIZE_IN_BYTES) {
-        perror("Failed to write inode bitmap");
-        close(fd);
-        exit(1);
-    }
+    write_to_partition(fd,INODE_BITMAP_BLOCK,inode_bitmap,INODE_BITMAP_SIZE_IN_BYTES);
+
 
     close(fd);
     printf("Filesystem formatted successfully.\n");

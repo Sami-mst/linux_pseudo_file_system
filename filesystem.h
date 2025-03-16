@@ -2,8 +2,10 @@
 #define FILESYSTEM_H
 
 #include <stdint.h>
+#include <unistd.h>
+#include <stdio.h>
 
-#define MAX_FILENAME_LEN 60
+#define MAX_FILENAME_LEN 6
 #define PARTITION_FILE "partition.img"
 #define BLOCK_SIZE 512
 #define INODE_SIZE 64
@@ -16,7 +18,7 @@
 #define BLOCK_BITMAP_SIZE_IN_BYTES (TOTAL_BLOCKS / 8)  
 #define INODE_BITMAP_BLOCK 1  
 #define BLOCK_BITMAP_BLOCK 2  
-#define INODE_TABLE_START 3  
+#define INODE_TABLE_START (BLOCK_BITMAP_BLOCK + (TOTAL_BLOCKS / BLOCK_SIZE / 8)) 
 #define DATA_BLOCK_START (INODE_TABLE_START + (TOTAL_INODES / (BLOCK_SIZE / INODE_SIZE)))
 extern unsigned char inode_bitmap[INODE_BITMAP_SIZE_IN_BYTES];
 extern unsigned char block_bitmap[BLOCK_BITMAP_SIZE_IN_BYTES];
@@ -38,7 +40,7 @@ typedef struct superblock {
 } *superblock;
 
 superblock init_superblock();
-int read_block(superblock sb,int fd, uint32_t block_number, void *buffer);
+ssize_t read_block(int fd, size_t block_number, void *buffer);
 void print_block_hex(void *buffer);
 void get_super_block(int fd,void *buffer);
 #endif // FILESYSTEM_H

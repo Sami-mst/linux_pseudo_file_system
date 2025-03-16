@@ -4,39 +4,22 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <stdlib.h> 
+#include <stdio.h>
 #include <string.h>
 #include "inode.h"
 #include "block.h"
+#include <string.h>
 
-int read_block(superblock sb,FILE *disk, uint32_t block_number, uint8_t *buffer) {
 
-    if (block_number >= sb->total_blocks) return -1;
-    
-    fseek(disk, block_number * BLOCK_SIZE, SEEK_SET);
-    fread(buffer, 1, BLOCK_SIZE, disk);
-    
-    return 0;
-}
 void write_to_partition(int fd, int block, void *data, size_t data_size) {
 
-
-    // Step 3: Write the modified buffer back to the partition, preserving the null bytes
-    ssize_t bytesWritten = pwrite(fd, data, BLOCK_SIZE, block);
+    ssize_t bytesWritten = pwrite(fd, data, data_size, block*BLOCK_SIZE);
     if (bytesWritten == -1) {
         perror("Failed to write to partition");
         close(fd);
     } else {
         printf("Successfully wrote %zd bytes to partition\n", bytesWritten);
     }
-}
-
-
-void print_block_hex(const uint8_t *buffer) {
-    for (int i = 0; i < BLOCK_SIZE; i++) {
-        printf("%02X ", buffer[i]);
-        if ((i + 1) % 16 == 0) printf("\n"); // New line every 16 bytes
-    }
-    printf("\n");
 }
 
 int creer_inode(char *nom,int type){
@@ -77,4 +60,5 @@ int creer_inode(char *nom,int type){
     }
 
     close(fd);
+    return 1;
 }

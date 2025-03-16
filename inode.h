@@ -2,7 +2,8 @@
 #define INODE_H
 
 #include "filesystem.h"
-
+#include <unistd.h>
+#include <stdio.h>
 typedef struct inode {
     uint32_t size;           
     uint32_t block_pointers[12]; 
