@@ -13,7 +13,7 @@
 #include "block.h"
 #include <string.h>
 
-void creer_inode(char *nom,int type);
+int creer_inode(int fd,char *nom,int type);
 void write_to_partition(int fd, int block, void *data, size_t data_size);
 
 //void creer_dossier(char *nom);

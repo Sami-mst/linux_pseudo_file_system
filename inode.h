@@ -5,8 +5,9 @@
 #include <unistd.h>
 #include <stdio.h>
 typedef struct inode {
+    char name[16];
     uint32_t size;           
-    uint32_t block_pointers[12]; 
+    uint32_t block_pointers[8]; 
     uint32_t single_indirect;
     uint16_t mode;
     uint8_t uid;           
@@ -18,7 +19,7 @@ typedef struct dir_entry {
     char name[MAX_FILENAME_LEN];
     uint32_t inode_number;        
 }*dir_entry;
-
+int find_free_inode(int fd);
 inode init_inode();
 
 #endif // INODE_H

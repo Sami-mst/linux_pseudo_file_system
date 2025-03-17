@@ -14,7 +14,7 @@ main.o: main.c filesystem.h inode.h block.h creer_partition.h creer_dossier.h
 filesystem.o: filesystem.c filesystem.h
 	$(CC) $(CFLAGS) -c filesystem.c
 
-inode.o: inode.c inode.h
+inode.o: inode.c inode.h creer_dossier.h
 	$(CC) $(CFLAGS) -c inode.c
 
 block.o: block.c block.h

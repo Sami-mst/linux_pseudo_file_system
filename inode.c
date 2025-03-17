@@ -2,10 +2,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
+#include "creer_dossier.h"
 #include <unistd.h>
 inode init_inode() {
     inode inod=malloc(INODE_SIZE);
+    
     if (inod==NULL){
         return NULL;
     }
@@ -15,8 +16,9 @@ inode init_inode() {
 }
 
 int find_free_inode(int fd) {
-    void *buffer=malloc(INODE_BITMAP_SIZE_IN_BYTES);
-    read_block(fd,INODE_TABLE_START,buffer);
+    void *buffer=malloc(BLOCK_SIZE);
+    read_block(fd,INODE_BITMAP_BLOCK,buffer);
+    //print_block_hex(buffer);
     unsigned char *bitmap = (unsigned char *)buffer;
     // Iterate through the bitmap to find a free inode (bit = 0)
     for (size_t i = 0; i < INODE_BITMAP_SIZE_IN_BYTES; i++) {
@@ -26,9 +28,10 @@ int find_free_inode(int fd) {
             if ((byte & (1 << bit)) == 0) {  // Found a free inode (bit is 0)
                 // Set the inode as allocated by setting the bit to 1
                 bitmap[i] |= (1 << bit);  // Mark the inode as allocated
-
+                write_to_partition(fd,INODE_BITMAP_BLOCK,(void*)bitmap,BLOCK_SIZE);
                 // Return the inode number (the index of the bit)
-                return i * 8 + bit +INODE_TABLE_START;
+                
+                return i * 8 + bit;
             }
         }
     }

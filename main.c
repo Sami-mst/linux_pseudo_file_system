@@ -8,11 +8,13 @@
 #include "creer_partition.h"
 #include <unistd.h>
 int main() {
-    int fd = open(PARTITION_FILE, O_RDONLY);
     creer_filesystem();
+    int fd = open(PARTITION_FILE, O_RDWR | O_CREAT, 0666);
     void *buffer = malloc(BLOCK_SIZE);
-
+    memset(buffer,0,BLOCK_SIZE);
+    creer_inode(fd,"bonjour",1);
+    read_block(fd,INODE_BITMAP_BLOCK,buffer);
     print_block_hex(buffer);
     close(fd); 
-    return 0;
+    return 0; 
 }

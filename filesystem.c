@@ -11,6 +11,7 @@ unsigned char inode_bitmap[INODE_BITMAP_SIZE_IN_BYTES];
 unsigned char block_bitmap[BLOCK_BITMAP_SIZE_IN_BYTES];
 superblock init_superblock() {
     superblock sb=malloc(BLOCK_SIZE);
+    memset(sb, 0, sizeof(struct superblock));
     if (sb==NULL){
         return NULL;
     }
