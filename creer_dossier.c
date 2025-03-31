@@ -11,8 +11,31 @@
 #include <string.h>
 #include "creer_partition.h"
 
+int ajouter_dossier_dans_dossier(inode parent_inode,inode dossier){
+
+}
+
 void creer_dossier(int fd,char* nom,int inode_dossier_parent){
-    
+    int inod=creer_inode(fd,nom,FILE_TYPE_DIRECTORY);
+    int inod_parent_block=inode_dossier_parent/(BLOCK_SIZE/INODE_SIZE)+INODE_TABLE_START;
+    int inod_parent_offset=(inode_dossier_parent%(BLOCK_SIZE/INODE_SIZE))*64;
+    dir_entry dossier=(dir_entry)malloc(sizeof(struct dir_entry));
+    strcpy(dossier->name,nom);
+    dossier->inode_number=inod;
+    int block=find_free_block(fd);
+    write_to_partition(fd,block,dossier,BLOCK_SIZE);
+
+
+    void * parent_block_buffer=malloc(BLOCK_SIZE);
+    memset(parent_block_buffer,0,BLOCK_SIZE);
+    read_block(fd,inod_parent_block,parent_block_buffer);
+    inode parent_inode=(inode)malloc(INODE_SIZE);
+    memcpy(parent_inode,parent_block_buffer+inod_parent_offset,INODE_SIZE);
+    parent_inode->block_pointers[0]=block;
+    memcpy(parent_block_buffer+inod_parent_offset,parent_inode,INODE_SIZE);
+    write_to_partition(fd,inod_parent_block,parent_block_buffer,BLOCK_SIZE);
+    print_block_hex(parent_block_buffer);
+    printf("created file in %s in block %d in inode %d\n",parent_inode->name,block,inod);
 }
 
 void write_to_partition(int fd, int block, void *data, size_t data_size) {
@@ -52,5 +75,5 @@ int creer_inode(int fd,char *nom,int type){
 
 
     printf("inode %d created in block %d \n",inod,inode_block);
-    return 1;
+    return inod;
 }

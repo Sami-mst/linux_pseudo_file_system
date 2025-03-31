@@ -1,23 +1,26 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c99 -D_POSIX_C_SOURCE=200809L
 LDFLAGS = -lc
-OBJ = main.o filesystem.o inode.o block.o creer_partition.o creer_dossier.o
+OBJ = main.o filesystem.o inode.o block.o creer_partition.o creer_dossier.o lister.o
 
 all: main
 
 main: $(OBJ)
 	$(CC) $(CFLAGS) -o main $(OBJ) $(LDFLAGS)
 
-main.o: main.c filesystem.h inode.h block.h creer_partition.h creer_dossier.h
+main.o: main.c filesystem.h inode.h block.h creer_partition.h creer_dossier.h lister.h
 	$(CC) $(CFLAGS) -c main.c
 
 filesystem.o: filesystem.c filesystem.h
 	$(CC) $(CFLAGS) -c filesystem.c
 
+lister.o: lister.c lister.h filesystem.h inode.h
+	$(CC) $(CFLAGS) -c lister.c
+
 inode.o: inode.c inode.h creer_dossier.h
 	$(CC) $(CFLAGS) -c inode.c
 
-block.o: block.c block.h
+block.o: block.c block.h 
 	$(CC) $(CFLAGS) -c block.c
 
 creer_partition.o: creer_partition.c creer_partition.h block.h filesystem.h inode.h creer_dossier.h

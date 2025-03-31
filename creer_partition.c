@@ -33,6 +33,7 @@ void creer_filesystem(){
     root_inode->mode=777;
     root_inode->uid=0;
     root_inode->gid=0;
+    strcpy(root_inode->name,"/");
     root_inode->size=0;
     root_inode->single_indirect=0;
     memset(root_inode->block_pointers,0,sizeof(root_inode->block_pointers));

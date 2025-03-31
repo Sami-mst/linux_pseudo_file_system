@@ -21,7 +21,7 @@ int find_free_inode(int fd) {
     //print_block_hex(buffer);
     unsigned char *bitmap = (unsigned char *)buffer;
     // Iterate through the bitmap to find a free inode (bit = 0)
-    for (size_t i = 0; i < INODE_BITMAP_SIZE_IN_BYTES; i++) {
+    for (size_t i = 1; i < INODE_BITMAP_SIZE_IN_BYTES; i++) {
         unsigned char byte = bitmap[i];
         
         for (int bit = 0; bit < 8; bit++) {
