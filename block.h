@@ -17,4 +17,5 @@ typedef struct indirect {
 
 block init_block();
 int find_free_block(int fd);
+int valid_block(int fd, int block_num);
 #endif // BLOCK_H

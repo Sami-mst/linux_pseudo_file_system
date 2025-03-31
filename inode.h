@@ -21,5 +21,5 @@ typedef struct dir_entry {
 }*dir_entry;
 int find_free_inode(int fd);
 inode init_inode();
-
+int valid_inode(int fd, int inode_num);
 #endif // INODE_H

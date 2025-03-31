@@ -11,9 +11,6 @@
 #include <string.h>
 #include "creer_partition.h"
 
-int ajouter_dossier_dans_dossier(inode parent_inode,inode dossier){
-
-}
 
 void creer_dossier(int fd,char* nom,int inode_dossier_parent){
     int inod=creer_inode(fd,nom,FILE_TYPE_DIRECTORY);
@@ -31,10 +28,15 @@ void creer_dossier(int fd,char* nom,int inode_dossier_parent){
     read_block(fd,inod_parent_block,parent_block_buffer);
     inode parent_inode=(inode)malloc(INODE_SIZE);
     memcpy(parent_inode,parent_block_buffer+inod_parent_offset,INODE_SIZE);
-    parent_inode->block_pointers[0]=block;
+    for (int i = 0; i < 8; i++) {
+        if (parent_inode->block_pointers[i] == 0 || valid_block(fd,parent_inode->block_pointers[i])==0 || inod==parent_inode->block_pointers[i]) { 
+            parent_inode->block_pointers[i]=block;
+            break;
+        }
+    }
     memcpy(parent_block_buffer+inod_parent_offset,parent_inode,INODE_SIZE);
     write_to_partition(fd,inod_parent_block,parent_block_buffer,BLOCK_SIZE);
-    print_block_hex(parent_block_buffer);
+    //print_block_hex(parent_block_buffer);
     printf("created file in %s in block %d in inode %d\n",parent_inode->name,block,inod);
 }
 
