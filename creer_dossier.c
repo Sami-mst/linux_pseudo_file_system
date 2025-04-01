@@ -13,6 +13,10 @@
 
 
 void creer_dossier(int fd,char* nom,int inode_dossier_parent){
+    if (file_exists_in_directory(fd,inode_dossier_parent,nom)==1){
+        printf("erreur : dossier existe deja\n");
+        return;
+    }
     int inod=creer_inode(fd,nom,FILE_TYPE_DIRECTORY);
     int inod_parent_block=inode_dossier_parent/(BLOCK_SIZE/INODE_SIZE)+INODE_TABLE_START;
     int inod_parent_offset=(inode_dossier_parent%(BLOCK_SIZE/INODE_SIZE))*64;
@@ -78,4 +82,60 @@ int creer_inode(int fd,char *nom,int type){
 
     printf("inode %d created in block %d \n",inod,inode_block);
     return inod;
+}
+
+int file_exists_in_directory(int fd, uint32_t dir_inode_num, const char *filename) {
+    // Lire l'inode du répertoire
+    int inod_block = dir_inode_num / (BLOCK_SIZE / INODE_SIZE) + INODE_TABLE_START;
+    int inod_offset = (dir_inode_num % (BLOCK_SIZE / INODE_SIZE)) * INODE_SIZE;
+
+    void *inode_block_buffer = malloc(BLOCK_SIZE);
+    if (!inode_block_buffer) {
+        perror("Memory allocation failed");
+        return -1;
+    }
+    read_block(fd, inod_block, inode_block_buffer);
+    inode dir_inode = (inode)(inode_block_buffer + inod_offset);
+
+    // Vérifier que l'inode est bien un répertoire
+    if (dir_inode->file_type != FILE_TYPE_DIRECTORY) {
+        printf("L'inode fourni n'est pas un répertoire.\n");
+        free(inode_block_buffer);
+        return -1;
+    }
+
+    // Parcourir les blocs directs du répertoire
+    for (int i = 0; i < 8; i++) {
+        uint32_t block_num = dir_inode->block_pointers[i];
+        if (block_num == 0) continue;  // Aucun bloc assigné
+
+        // Lire le bloc de données
+        void *block_buffer = malloc(BLOCK_SIZE);
+        if (!block_buffer) {
+            perror("Memory allocation failed");
+            free(inode_block_buffer);
+            return -1;
+        }
+        read_block(fd, block_num, block_buffer);
+
+        // Interpréter le bloc comme une liste de dir_entry
+        dir_entry entries = (dir_entry)block_buffer;
+        int num_entries = BLOCK_SIZE / sizeof(struct dir_entry);
+
+        // Parcourir les entrées
+        for (int j = 0; j < num_entries; j++) {
+            if (entries[j].inode_number != 0 && valid_inode(fd, entries[j].inode_number)) {
+                if (strncmp(entries[j].name, filename, MAX_FILENAME_LEN) == 0) {
+                    free(block_buffer);
+                    free(inode_block_buffer);
+                    return 1;  // Fichier trouvé
+                }
+            }
+        }
+
+        free(block_buffer);
+    }
+
+    free(inode_block_buffer);
+    return 0;  // Fichier non trouvé
 }

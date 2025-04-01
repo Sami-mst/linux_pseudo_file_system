@@ -20,12 +20,9 @@ int main() {
     //print_block_hex(buffer);
     //creer_dossier(fd,"hello",0);
     creer_dossier(fd,"hello2",0);
-    //supprimer_inode(fd,8);
-    creer_dossier(fd,"hello4",0);
     creer_fichier(fd,"f6.txt",0);
-    
-    //printf("valid = %d\n",valid_inode(fd,10));
-    
+    //supprimer_inode(fd,10);
+    move_file(fd,"/f6.txt", "/hello2/f6.txt");
     lister_dossier(fd,0);
     close(fd); 
     return 0; 

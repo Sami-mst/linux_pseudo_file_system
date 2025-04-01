@@ -9,7 +9,7 @@
 #define PARTITION_FILE "partition.img"
 #define BLOCK_SIZE 512
 #define INODE_SIZE 64
-
+#define ROOT_INODE 0
 #define FILE_TYPE_FILE  1  
 #define FILE_TYPE_DIRECTORY 2  
 #define TOTAL_BLOCKS 65536  
